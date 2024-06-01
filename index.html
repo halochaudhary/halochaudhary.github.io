@@ -1,0 +1,95 @@
+<div style="align-items: center; background-color: #2c3338; color: white; display: flex; font-family: &quot;Open Sans&quot;, sans-serif; font-size: 0.875rem; font-weight: 400; justify-content: center; line-height: 1.5; margin: 0px; min-height: 100vh;">
+    <div class="grid" style="display: grid; gap: 1rem; max-width: 20rem; text-align: center; width: 90%;">
+        <h2 style="color: white;">QR Code Generator</h2>
+        <img id="img" src="" style="display: block; margin: 0px auto; max-height: 100%; max-width: 100%;" />
+        <p class="instructions" style="color: #aaaaaa; font-size: 0.75rem; margin-top: -0.5rem;">Select QR Code size:</p>
+        <select id="size" style="margin-bottom: 1rem;">
+            <option value="100">100x100</option>
+            <option value="150">150x150</option>
+            <option value="200">200x200</option>
+            <option selected="" value="250">250x250</option>
+            <option value="300">300x300</option>
+            <option value="350">350x350</option>
+        </select>
+        <br />
+        <textarea id="qrtext" style="margin-bottom: 1rem; width: 100%;"></textarea>
+        <div class="advanced-options-container" style="align-items: center; display: flex; justify-content: center;">
+            <input id="advancedCheckbox" onchange="toggleAdvancedOptions()" style="margin-right: 0.5rem;" type="checkbox" /> 
+            <label style="color: #aaaaaa; font-size: 0.75rem;">Advanced Options</label>
+            <div class="advanced-options" style="display: none; margin-left: 0.5rem;">
+                <label style="color: #aaaaaa; font-size: 0.75rem;">QR Code Color:</label>
+                <input id="color" style="margin-bottom: 0.5rem;" type="color" value="#000000" />
+                <br />
+                <label style="color: #aaaaaa; font-size: 0.75rem;">Error Correction Level:</label>
+                <select id="level" style="margin-bottom: 0.5rem;">
+                    <option value="L">Low</option>
+                    <option value="M">Medium</option>
+                    <option selected="" value="Q">Quartile</option>
+                    <option value="H">High</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn" onclick="genQR()" style="background-color: #ea4c88; border-radius: 0.25rem; border: none; color: white; cursor: pointer; font-weight: bold; padding: 1rem; text-transform: uppercase; transition: background-color 0.3s ease 0s;">Generate QR</button>
+        <p id="error" style="color: red; display: none; margin-top: 1rem;">Please enter some text to generate QR code.</p>
+        <p id="success" style="color: green; display: none; margin-top: 1rem;">QR code generated successfully!</p>
+        <button class="btn" id="copyBtn" onclick="copyToClipboard()" style="background-color: #ea4c88; border-radius: 0.25rem; border: none; color: white; cursor: pointer; display: none; font-weight: bold; margin-top: 1rem; padding: 1rem; text-transform: uppercase; transition: background-color 0.3s ease 0s;">Copy QR Code URL</button>
+        <button class="btn" id="downloadBtn" onclick="downloadQR()" style="background-color: #ea4c88; border-radius: 0.25rem; border: none; color: white; cursor: pointer; display: none; font-weight: bold; margin-top: 1rem; padding: 1rem; text-transform: uppercase; transition: background-color 0.3s ease 0s;">Download QR Code</button>
+        <p style="color: #aaaaaa; font-size: 0.75rem; margin-top: 1.5rem;">Developed By Manish Chaudhary</p>
+    </div>
+</div>
+
+<script>
+    function toggleAdvancedOptions() {
+        var advancedCheckbox = document.getElementById("advancedCheckbox");
+        var advancedOptions = document.querySelector(".advanced-options");
+        advancedOptions.style.display = advancedCheckbox.checked ? "block" : "none";
+    }
+
+    function genQR() {
+        var gapi = "https://chart.googleapis.com/chart?chf=bg,s,65432100&cht=qr&chs=";
+        var myimg = document.getElementById("img");
+        var mytext = document.getElementById("qrtext").value;
+        var sizeSelect = document.getElementById("size");
+        var sizeValue = sizeSelect.value;
+        var colorSelect = document.getElementById("color");
+        var colorValue = colorSelect.value.substr(1); // Remove # from color code
+        var levelSelect = document.getElementById("level");
+        var levelValue = levelSelect.value;
+        var errorText = document.getElementById("error");
+        var successText = document.getElementById("success");
+        var copyBtn = document.getElementById("copyBtn");
+        var downloadBtn = document.getElementById("downloadBtn");
+
+        if (mytext !== "") {
+            var qrUrl = gapi + sizeValue + "x" + sizeValue + "&chl=" + mytext + "&choe=UTF-8&chld=" + levelValue + "|1&chco=" + colorValue;
+            myimg.src = qrUrl;
+            errorText.style.display = "none";
+            successText.style.display = "block";
+            copyBtn.style.display = "inline-block";
+            downloadBtn.style.display = "inline-block";
+        } else {
+            errorText.style.display = "block";
+            successText.style.display = "none";
+            copyBtn.style.display = "none";
+            downloadBtn.style.display = "none";
+        }
+    }
+
+    function copyToClipboard() {
+        var text = document.getElementById("img").src;
+        navigator.clipboard.writeText(text).then(function() {
+            alert("QR code URL copied to clipboard!");
+        }, function(err) {
+            console.error('Failed to copy: ', err);
+        });
+    }
+
+    function downloadQR() {
+        var link = document.createElement('a');
+        link.href = document.getElementById("img").src;
+        link.download = 'qr-code.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
