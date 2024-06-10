@@ -1,7 +1,18 @@
-<div style="align-items: center; background-color: #2c3338; color: white; display: flex; font-family: &quot;Open Sans&quot;, sans-serif; font-size: 0.875rem; font-weight: 400; justify-content: center; line-height: 1.5; margin: 0px; min-height: 100vh;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+<div style="align-items: center; background-color: #2c3338; color: white; display: flex; font-family: 'Open Sans', sans-serif; font-size: 0.875rem; font-weight: 400; justify-content: center; line-height: 1.5; margin: 0px; min-height: 100vh;">
     <div class="grid" style="display: grid; gap: 1rem; max-width: 20rem; text-align: center; width: 90%;">
         <h2 style="color: white;">QR Code Generator</h2>
-        <img id="img" src="" style="display: block; margin: 0px auto; max-height: 100%; max-width: 100%;" />
+        <div id="qrcode" style="display: block; margin: 0px auto;"></div>
         <p class="instructions" style="color: #aaaaaa; font-size: 0.75rem; margin-top: -0.5rem;">Select QR Code size:</p>
         <select id="size" style="margin-bottom: 1rem;">
             <option value="100">100x100</option>
@@ -38,6 +49,7 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     function toggleAdvancedOptions() {
         var advancedCheckbox = document.getElementById("advancedCheckbox");
@@ -46,13 +58,11 @@
     }
 
     function genQR() {
-        var gapi = "https://chart.googleapis.com/chart?chf=bg,s,65432100&cht=qr&chs=";
-        var myimg = document.getElementById("img");
         var mytext = document.getElementById("qrtext").value;
         var sizeSelect = document.getElementById("size");
-        var sizeValue = sizeSelect.value;
+        var sizeValue = parseInt(sizeSelect.value);
         var colorSelect = document.getElementById("color");
-        var colorValue = colorSelect.value.substr(1); // Remove # from color code
+        var colorValue = colorSelect.value;
         var levelSelect = document.getElementById("level");
         var levelValue = levelSelect.value;
         var errorText = document.getElementById("error");
@@ -61,8 +71,18 @@
         var downloadBtn = document.getElementById("downloadBtn");
 
         if (mytext !== "") {
-            var qrUrl = gapi + sizeValue + "x" + sizeValue + "&chl=" + mytext + "&choe=UTF-8&chld=" + levelValue + "|1&chco=" + colorValue;
-            myimg.src = qrUrl;
+            var qrcodeContainer = document.getElementById("qrcode");
+            qrcodeContainer.innerHTML = ""; // Clear the old QR code
+
+            var qrcode = new QRCode(qrcodeContainer, {
+                text: mytext,
+                width: sizeValue,
+                height: sizeValue,
+                colorDark: colorValue,
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel[levelValue]
+            });
+
             errorText.style.display = "none";
             successText.style.display = "block";
             copyBtn.style.display = "inline-block";
@@ -76,20 +96,26 @@
     }
 
     function copyToClipboard() {
-        var text = document.getElementById("img").src;
-        navigator.clipboard.writeText(text).then(function() {
-            alert("QR code URL copied to clipboard!");
-        }, function(err) {
-            console.error('Failed to copy: ', err);
+        var canvas = document.querySelector("#qrcode canvas");
+        canvas.toBlob(function(blob) {
+            var url = URL.createObjectURL(blob);
+            navigator.clipboard.writeText(url).then(function() {
+                alert("QR code URL copied to clipboard!");
+            }, function(err) {
+                console.error('Failed to copy: ', err);
+            });
         });
     }
 
     function downloadQR() {
+        var canvas = document.querySelector("#qrcode canvas");
         var link = document.createElement('a');
-        link.href = document.getElementById("img").src;
+        link.href = canvas.toDataURL("image/png");
         link.download = 'qr-code.png';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 </script>
+</body>
+</html>
